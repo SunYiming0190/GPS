@@ -44,7 +44,7 @@
         dragEnable: true,
         scrollWheel: true,
         zoom: 15,
-        center: [lng, lat]  // 高德地图要求顺序为 [经度, 纬度]
+        center: [lng, lat]
       });
 
       marker = new AMap.Marker({
@@ -56,7 +56,7 @@
       });
 
       infoWindow = new AMap.InfoWindow({
-        content: `<b>导盲杖当前位置</b><br/>纬度: ${lat}<br/>经度: ${lng}`,
+        content: `<b>导盲杖当前位置</b><br/>经度: ${lng}<br/>纬度: ${lat}`,
         offset: new AMap.Pixel(0, -30)
       });
 
@@ -64,7 +64,7 @@
         infoWindow.open(map, marker.getPosition());
       });
 
-      document.getElementById("coord").innerText = `${lat}, ${lng}`;
+      document.getElementById("coord").innerText = `${lng}, ${lat}`;
       lastLat = lat;
       lastLng = lng;
     }
@@ -82,8 +82,8 @@
           } else if (lat !== lastLat || lng !== lastLng) {
             marker.setPosition([lng, lat]);
             map.setCenter([lng, lat]);
-            infoWindow.setContent(`<b>导盲杖当前位置</b><br/>纬度: ${lat}<br/>经度: ${lng}`);
-            document.getElementById("coord").innerText = `${lat}, ${lng}`;
+            infoWindow.setContent(`<b>导盲杖当前位置</b><br/>经度: ${lng}<br/>纬度: ${lat}`);
+            document.getElementById("coord").innerText = `${lng}, ${lat}`;
             lastLat = lat;
             lastLng = lng;
           }
