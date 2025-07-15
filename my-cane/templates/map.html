@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>导盲杖实时定位</title>
+  <!-- 高德地图 API -->
   <script src="https://webapi.amap.com/maps?v=2.0&key=cb5ffce029f1b652645bf8c256e25546"></script>
   <style>
     html, body, #map {
@@ -31,13 +32,18 @@
 
   <script>
     let map, marker, infoWindow;
+    let lastLat = null;
+    let lastLng = null;
 
     // 初始化地图
-    function initMap(lng, lat) {
+    function initMap(lat, lng) {
       map = new AMap.Map("map", {
         resizeEnable: true,
         zoom: 15,
-        center: [lng, lat]
+        center: [lng, lat],
+        zoomEnable: true,
+        dragEnable: true,
+        scrollWheel: true
       });
 
       marker = new AMap.Marker({
@@ -58,32 +64,45 @@
       });
 
       document.getElementById("coord").innerText = `${lng}, ${lat}`;
+      lastLat = lat;
+      lastLng = lng;
     }
 
-    // 获取实时坐标并更新地图
+    // 获取最新坐标并更新地图
     async function fetchAndUpdate() {
       try {
         const res = await fetch('/latest');
         const data = await res.json();
-        const lng = data.lng;
         const lat = data.lat;
+        const lng = data.lng;
 
+        if (!lat || !lng) {
+          console.warn("❌ 无效坐标数据：", data);
+          return;
+        }
+
+        // 第一次加载地图
         if (!map) {
-          initMap(lng, lat);  // 初始化地图
-        } else {
-          marker.setPosition([lng, lat]);
-          map.setCenter([lng, lat]);
+          initMap(lat, lng);
+        } else if (lat !== lastLat || lng !== lastLng) {
+          const pos = [lng, lat];
+          marker.setPosition(pos);
+          map.setCenter(pos);
           infoWindow.setContent(`<b>导盲杖当前位置</b><br/>经度: ${lng}<br/>纬度: ${lat}`);
           document.getElementById("coord").innerText = `${lng}, ${lat}`;
+          lastLat = lat;
+          lastLng = lng;
         }
       } catch (err) {
-        console.error('❌ 获取坐标失败：', err);
+        console.error("🚫 获取定位失败:", err);
+        document.getElementById("coord").innerText = "获取失败";
       }
     }
 
-    // 每隔5秒刷新坐标
-    setInterval(fetchAndUpdate, 5000);
-    fetchAndUpdate(); // 首次加载
+    // 首次调用 + 定时刷新
+    fetchAndUpdate();
+    setInterval(fetchAndUpdate, 5000); // 每 5 秒更新一次
+
   </script>
 </body>
 </html>
